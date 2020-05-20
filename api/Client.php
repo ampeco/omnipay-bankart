@@ -1048,6 +1048,7 @@ class Client {
         $domDocument = $this->getGenerator()->generateOptions($this->getUsername(), $this->getPassword(), $identifier, $args);
         $xml = $domDocument->saveXML();
 
+
         $response = $this->signAndSendXml($xml, $this->apiKey, $this->sharedSecret, self::$gatewayUrl.self::OPTIONS_ROUTE);
 
         if ($response->getErrorCode() || $response->getErrorMessage()) {
@@ -1114,10 +1115,6 @@ class Client {
     public static function setApiUrl($url) {
         if (empty($url)) {
             throw new InvalidValueException('The URL to the Gateway can not be empty!');
-        }
-
-        if (!\filter_var($url, FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED | FILTER_FLAG_HOST_REQUIRED)) {
-            throw new InvalidValueException('The URL to the Gateway should be a valid URL!');
         }
 
         static::$gatewayUrl = $url;
