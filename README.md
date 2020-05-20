@@ -11,7 +11,7 @@ composer require ampeco/omnipay-bankart
 
 Create the gateway
 ```php
-$gateway = Omnipay::create('\Ampeco\OmnipayBakart\Gateway');
+$gateway = Omnipay::create('\Ampeco\OmnipayBankart\Gateway');
 $gateway->initialize([
     'username'           => 'Your API username',
     'password'           => 'Your API password',
