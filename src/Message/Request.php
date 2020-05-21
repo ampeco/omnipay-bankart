@@ -2,14 +2,18 @@
 
 namespace Ampeco\OmnipayBankart\Message;
 
+use Ampeco\OmnipayBankart\ClientFactory;
+use Ampeco\OmnipayBankart\ClientFactoryDataSource;
+use Ampeco\OmnipayBankart\ContainsClientFactory;
 use Omnipay\Common\Helper;
 use Omnipay\Common\Message\AbstractRequest;
 use PaymentGateway\Client\Client;
 use PaymentGateway\Client\Data\Customer;
 use PaymentGateway\Client\Transaction\Preauthorize;
 
-abstract class Request extends AbstractRequest
+abstract class Request extends AbstractRequest implements ClientFactoryDataSource
 {
+    use ContainsClientFactory;
 
     /**
      * @var string
@@ -61,13 +65,14 @@ abstract class Request extends AbstractRequest
         return $this->getParameter('SharedSecret');
     }
 
-    /**
-     * @return \PaymentGateway\Client\Client
-     */
-    protected function getClient(){
-        Client::setApiUrl('https://gateway.bankart.si/');
-        $client = new \PaymentGateway\Client\Client($this->getUsername(), $this->getPassword(), $this->getApiKey(), $this->getSharedSecret(), null, $this->getTestMode());
-        return $client;
+    public function setLanguage($value)
+    {
+        return $this->setParameter('Language', $value);
+    }
+
+    public function getLanguage()
+    {
+        return $this->getParameter('Language');
     }
 
     /**

@@ -19,14 +19,14 @@ use PaymentGateway\Client\Client;
  * @method \Omnipay\Common\Message\RequestInterface completePurchase(array $options = array())
  * @method \Omnipay\Common\Message\RequestInterface updateCard(array $options = array())
  */
-class Gateway extends AbstractGateway
+class Gateway extends AbstractGateway implements ClientFactoryDataSource
 {
+    use ContainsClientFactory;
 
     public function getName()
     {
         return 'Bankart';
     }
-
 
     /**
      * @return array
@@ -38,6 +38,7 @@ class Gateway extends AbstractGateway
             'Password' => '',
             'ApiKey' => '',
             'SharedSecret' => '',
+            'Language' => 'en',
         ];
     }
     public function setUsername($value)
@@ -80,6 +81,16 @@ class Gateway extends AbstractGateway
         return $this->getParameter('SharedSecret');
     }
 
+    public function setLanguage($value)
+    {
+        return $this->setParameter('Language', $value);
+    }
+
+    public function getLanguage()
+    {
+        return $this->getParameter('Language');
+    }
+
     public function createCard(array $parameters = array())
     {
         return $this->createRequest(CreateCardRequest::class, $parameters);
@@ -117,15 +128,6 @@ class Gateway extends AbstractGateway
     public function fetchTransaction(array $parameters = [])
     {
         return $this->createRequest(FetchTransactionRequest::class, $parameters);
-    }
-
-    /**
-     * @return \PaymentGateway\Client\Client
-     */
-    protected function getClient(){
-        Client::setApiUrl('https://gateway.bankart.si/');
-        $client = new \PaymentGateway\Client\Client($this->getUsername(), $this->getPassword(), $this->getApiKey(), $this->getSharedSecret(), null, $this->getTestMode());
-        return $client;
     }
 
     public function acceptNotification(array $parameters = array())
