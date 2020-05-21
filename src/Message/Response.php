@@ -32,7 +32,7 @@ class Response extends AbstractResponse implements RedirectResponseInterface
     public function isSuccessful()
     {
         if ($this->data instanceof StatusResult){
-            return $this->data->getTransactionStatus() === StatusResult::TRANSACTION_SUCCESS && $this->data->isSuccess();
+            return $this->data->getTransactionStatus() === StatusResult::TRANSACTION_SUCCESS && $this->data->isOperationSuccess();
         }
         return $this->data->getReturnType() !== Result::RETURN_TYPE_ERROR && $this->data->isSuccess();
     }

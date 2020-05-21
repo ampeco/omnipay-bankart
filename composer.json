@@ -4,6 +4,7 @@
     "keywords": [],
     "license": "MIT",
     "type": "project",
+    "version": "1.0.0",
     "require": {
         "php": ">=7.3",
         "ext-curl": "*",
