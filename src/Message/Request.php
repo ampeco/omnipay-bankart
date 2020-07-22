@@ -10,6 +10,7 @@ use Omnipay\Common\Message\AbstractRequest;
 use PaymentGateway\Client\Client;
 use PaymentGateway\Client\Data\Customer;
 use PaymentGateway\Client\Transaction\Preauthorize;
+use PaymentGateway\Client\Transaction\Register;
 
 abstract class Request extends AbstractRequest implements ClientFactoryDataSource
 {
@@ -82,6 +83,9 @@ abstract class Request extends AbstractRequest implements ClientFactoryDataSourc
     {
 
         $class = $this->transactionClass;
+        /**
+         * @var $transaction Register
+         */
         $transaction = new $class();
         foreach ($data as $key => $value){
             if ($key === 'customer' && is_array($value)){
@@ -90,6 +94,10 @@ abstract class Request extends AbstractRequest implements ClientFactoryDataSourc
                     call_user_func([$customer, Helper::camelCase('set_'.$customerKey)], $customerValue);
                 }
                 $transaction->setCustomer($customer);
+            } elseif ($key === 'extra_data' && is_array($value)){
+                foreach ($value as $extraKey => $extraValue){
+                    $transaction->addExtraData($extraKey, $extraValue);
+                }
             } else {
                 call_user_func([$transaction, Helper::camelCase('set_'.$key)], $value);
             }

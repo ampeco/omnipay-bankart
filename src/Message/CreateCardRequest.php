@@ -21,6 +21,16 @@ class CreateCardRequest extends Request
         return $this->getParameter('Customer');
     }
 
+    public function get3dsAuthenticationIndicator()
+    {
+        return $this->getParameter('3dsAuthenticationIndicator');
+    }
+
+    public function set3dsAuthenticationIndicator($value)
+    {
+        return $this->setParameter('3dsAuthenticationIndicator', $value);
+    }
+
     public function getData()
     {
 
@@ -32,6 +42,9 @@ class CreateCardRequest extends Request
             'error_url' => $this->getReturnUrl(),
             'callback_url' => $this->getNotifyUrl(),
             'customer' => $this->getCustomer(),
+            'extra_data' => [
+                '3ds:authenticationIndicator' => $this->get3DSAuthenticationIndicator(),
+            ],
         ];
 
         if ($this->getAmount() && $this->getCurrency()){
