@@ -80,7 +80,41 @@ class OmnipayBankartGatewayTest extends TestCase
         $this->mockClient->shouldNotReceive('register');
 
         $response = $this->gateway->createCard([
-            'amount' => 1,
+            'amount'   => 1,
+            'currency' => 'EUR'
+        ])->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertTrue($response->isRedirect());
+        $this->assertSame('http://google.com', $response->getRedirectUrl());
+        $this->assertSame('123456', $response->getTransactionReference());
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_request_to_add_card_via_purchase_0_amount()
+    {
+        $this->mockClient->shouldReceive('preauthorize')
+            ->with(Mockery::on(function (Preauthorize $argument) {
+                if ($argument->getCurrency() != 'EUR') {
+                    return false;
+                }
+                if (!$argument->isWithRegister()) {
+                    return false;
+                }
+                if ($argument->getAmount() != 0) {
+                    return false;
+                }
+                return true;
+            }))
+            ->andReturn($this->redirectResult())
+            ->once();
+
+        $this->mockClient->shouldNotReceive('register');
+
+        $response = $this->gateway->createCard([
+            'amount'   => 0,
             'currency' => 'EUR'
         ])->send();
 

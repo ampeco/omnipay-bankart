@@ -17,7 +17,8 @@ class CreateCardRequest extends Request
         return $this->setParameter('Customer', $customer);
     }
 
-    public function getCustomer(){
+    public function getCustomer()
+    {
         return $this->getParameter('Customer');
     }
 
@@ -31,12 +32,22 @@ class CreateCardRequest extends Request
         return $this->setParameter('3dsAuthenticationIndicator', $value);
     }
 
+    public function get3dsRecurringFrequency()
+    {
+        return $this->getParameter('3dsRecurringFrequency');
+    }
+
+    public function set3dsRecurringFrequency($value)
+    {
+        return $this->setParameter('3dsRecurringFrequency', $value);
+    }
+
     public function getData()
     {
 
         $res = [
             'transaction_id' => $this->getTransactionId(),
-            'description' => $this->getDescription(),
+            'description'    => $this->getDescription(),
             'success_url' => $this->getReturnUrl(),
             'cancel_url' => $this->getReturnUrl(),
             'error_url' => $this->getReturnUrl(),
@@ -47,14 +58,16 @@ class CreateCardRequest extends Request
             ],
         ];
 
-        if ($this->getAmount() && $this->getCurrency()){
+        if ($this->getAmount() && $this->getCurrency()) {
             // Use store card with authorization if amount is assigned
             $res = array_merge($res, [
-                'amount' => $this->getAmount(),
-                'currency' => $this->getCurrency(),
-                'with_register' => true,
+                'amount'                => $this->getAmount(),
+                'currency'              => $this->getCurrency(),
+                'with_register'         => true,
                 'transaction_indicator' => Preauthorize::TRANSACTION_INDICATOR_INITIAL,
             ]);
+            $res['extra_data']['3ds:recurringFrequency'] = $this->get3dsRecurringFrequency();
+
             $this->transactionClass = Preauthorize::class;
             $this->transactionName = 'preauthorize';
         }
