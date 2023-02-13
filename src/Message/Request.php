@@ -2,14 +2,11 @@
 
 namespace Ampeco\OmnipayBankart\Message;
 
-use Ampeco\OmnipayBankart\ClientFactory;
 use Ampeco\OmnipayBankart\ClientFactoryDataSource;
 use Ampeco\OmnipayBankart\ContainsClientFactory;
 use Omnipay\Common\Helper;
 use Omnipay\Common\Message\AbstractRequest;
-use PaymentGateway\Client\Client;
 use PaymentGateway\Client\Data\Customer;
-use PaymentGateway\Client\Transaction\Preauthorize;
 use PaymentGateway\Client\Transaction\Register;
 
 abstract class Request extends AbstractRequest implements ClientFactoryDataSource
@@ -76,6 +73,36 @@ abstract class Request extends AbstractRequest implements ClientFactoryDataSourc
         return $this->getParameter('Language');
     }
 
+    public function get3dsAuthenticationIndicator()
+    {
+        return $this->getParameter('3dsAuthenticationIndicator');
+    }
+
+    public function set3dsAuthenticationIndicator($value)
+    {
+        return $this->setParameter('3dsAuthenticationIndicator', $value);
+    }
+
+    public function get3dsChallengeIndicator()
+    {
+        return $this->getParameter('3dsChallengeIndicator');
+    }
+
+    public function set3dsChallengeIndicator($value)
+    {
+        return $this->setParameter('3dsChallengeIndicator', $value);
+    }
+
+    public function get3dsRecurringFrequency()
+    {
+        return $this->getParameter('3dsRecurringFrequency');
+    }
+
+    public function set3dsRecurringFrequency($value)
+    {
+        return $this->setParameter('3dsRecurringFrequency', $value);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -87,19 +114,19 @@ abstract class Request extends AbstractRequest implements ClientFactoryDataSourc
          * @var $transaction Register
          */
         $transaction = new $class();
-        foreach ($data as $key => $value){
-            if ($key === 'customer' && is_array($value)){
+        foreach ($data as $key => $value) {
+            if ($key === 'customer' && is_array($value)) {
                 $customer = new Customer();
-                foreach ($value as $customerKey => $customerValue){
-                    call_user_func([$customer, Helper::camelCase('set_'.$customerKey)], $customerValue);
+                foreach ($value as $customerKey => $customerValue) {
+                    call_user_func([$customer, Helper::camelCase('set_' . $customerKey)], $customerValue);
                 }
                 $transaction->setCustomer($customer);
-            } elseif ($key === 'extra_data' && is_array($value)){
-                foreach ($value as $extraKey => $extraValue){
+            } elseif ($key === 'extra_data' && is_array($value)) {
+                foreach ($value as $extraKey => $extraValue) {
                     $transaction->addExtraData($extraKey, $extraValue);
                 }
             } else {
-                call_user_func([$transaction, Helper::camelCase('set_'.$key)], $value);
+                call_user_func([$transaction, Helper::camelCase('set_' . $key)], $value);
             }
         }
 

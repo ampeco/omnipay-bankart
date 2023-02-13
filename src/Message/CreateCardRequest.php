@@ -22,26 +22,6 @@ class CreateCardRequest extends Request
         return $this->getParameter('Customer');
     }
 
-    public function get3dsAuthenticationIndicator()
-    {
-        return $this->getParameter('3dsAuthenticationIndicator');
-    }
-
-    public function set3dsAuthenticationIndicator($value)
-    {
-        return $this->setParameter('3dsAuthenticationIndicator', $value);
-    }
-
-    public function get3dsRecurringFrequency()
-    {
-        return $this->getParameter('3dsRecurringFrequency');
-    }
-
-    public function set3dsRecurringFrequency($value)
-    {
-        return $this->setParameter('3dsRecurringFrequency', $value);
-    }
-
     public function getData()
     {
 
@@ -55,6 +35,8 @@ class CreateCardRequest extends Request
             'customer' => $this->getCustomer(),
             'extra_data' => [
                 '3ds:authenticationIndicator' => $this->get3DSAuthenticationIndicator(),
+                '3ds:recurringFrequency' => $this->get3dsRecurringFrequency(),
+                '3ds:challengeIndicator' => $this->get3dsChallengeIndicator(),
             ],
         ];
 
@@ -66,7 +48,6 @@ class CreateCardRequest extends Request
                 'with_register'         => true,
                 'transaction_indicator' => Preauthorize::TRANSACTION_INDICATOR_INITIAL,
             ]);
-            $res['extra_data']['3ds:recurringFrequency'] = $this->get3dsRecurringFrequency();
 
             $this->transactionClass = Preauthorize::class;
             $this->transactionName = 'preauthorize';
