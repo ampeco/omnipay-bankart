@@ -37,6 +37,7 @@ class CreateCardRequest extends Request
                 '3ds:authenticationIndicator' => $this->get3DSAuthenticationIndicator(),
                 '3ds:recurringFrequency' => $this->get3dsRecurringFrequency(),
                 '3ds:challengeIndicator' => $this->get3dsChallengeIndicator(),
+                '3dsecure' => 'MANDATORY',
             ],
         ];
 
