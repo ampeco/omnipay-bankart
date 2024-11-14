@@ -45,11 +45,6 @@ class AuthorizeRequest extends Request
             'callback_url' => $this->getNotifyUrl(),
             'customer' => $this->getCustomer(),
             'transaction_indicator' => $this->getTransactionIndicator() ?: Preauthorize::TRANSACTION_INDICATOR_SINGLE,
-            'extra_data' => [
-                '3ds:authenticationIndicator' => $this->get3dsAuthenticationIndicator(),
-                '3ds:recurringFrequency' => $this->get3dsRecurringFrequency(),
-                '3ds:challengeIndicator' => $this->get3dsChallengeIndicator(),
-            ],
         ];
 
         if ($this->getCardReference()) {
