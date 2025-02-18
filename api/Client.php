@@ -7,14 +7,14 @@ use PaymentGateway\Client\CustomerProfile\DeleteProfileResponse;
 use PaymentGateway\Client\CustomerProfile\GetProfileResponse;
 use PaymentGateway\Client\CustomerProfile\PaymentInstrument;
 use PaymentGateway\Client\CustomerProfile\UpdateProfileResponse;
-use PaymentGateway\Client\Json\ErrorResponse;
-use PaymentGateway\Client\Exception\RateLimitException;
-use PaymentGateway\Client\Schedule\ScheduleData;
 use PaymentGateway\Client\Exception\ClientException;
 use PaymentGateway\Client\Exception\InvalidValueException;
+use PaymentGateway\Client\Exception\RateLimitException;
 use PaymentGateway\Client\Exception\TimeoutException;
 use PaymentGateway\Client\Http\CurlClient;
 use PaymentGateway\Client\Http\Response;
+use PaymentGateway\Client\Json\ErrorResponse;
+use PaymentGateway\Client\Schedule\ScheduleData;
 use PaymentGateway\Client\StatusApi\StatusRequestData;
 use PaymentGateway\Client\Transaction\Base\AbstractTransaction;
 use PaymentGateway\Client\Transaction\Capture;
@@ -33,11 +33,9 @@ use Psr\Log\LogLevel;
 
 /**
  * Class Client
- *
- * @package PaymentGateway\Client
  */
-class Client {
-
+class Client
+{
     /**
      * The default url points to the Gateway
      */
@@ -61,9 +59,7 @@ class Client {
     const CUSTOMER_PROFILE_UPDATE = 'api/v3/customerProfiles/[API_KEY]/updateProfile';
     const CUSTOMER_PROFILE_DELETE = 'api/v3/customerProfiles/[API_KEY]/deleteProfile';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected static $gatewayUrl = 'https://bankart.paymentsandbox.cloud/';
 
     /**
@@ -109,14 +105,10 @@ class Client {
      */
     protected $testMode;
 
-	/**
-	 * @var LoggerInterface
-	 */
+    /** @var LoggerInterface */
     protected $logger;
 
-    /**
-     * @var Generator
-     */
+    /** @var Generator */
     protected $generator;
 
     /**
@@ -125,9 +117,10 @@ class Client {
      * @param string $apiKey
      * @param string $sharedSecret
      * @param string $language
-     * @param bool   $testMode - DEPRECATED
+     * @param bool $testMode - DEPRECATED
      */
-    public function __construct($username, $password, $apiKey, $sharedSecret, $language = null, $testMode = false) {
+    public function __construct($username, $password, $apiKey, $sharedSecret, $language = null, $testMode = false)
+    {
         $this->username = $username;
         $this->setPassword($password);
         $this->apiKey = $apiKey;
@@ -136,17 +129,19 @@ class Client {
         $this->testMode = $testMode;
     }
 
-	/**
-	 * Set a Logger instance
-	 * @param LoggerInterface $logger
-	 * @return $this
-	 */
-    public function setLogger(LoggerInterface $logger) {
-    	$this->logger = $logger;
-    	return $this;
+    /**
+     * Set a Logger instance
+     * @param LoggerInterface $logger
+     * @return $this
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+
+        return $this;
     }
 
-	/**
+    /**
      * Logs with an arbitrary level if we have a logger set
      *
      * @param mixed $level
@@ -154,20 +149,22 @@ class Client {
      * @param array $context
      * @return null
      */
-    public function log($level, $message, array $context = array()) {
-    	if ($this->logger && $this->logger instanceof LoggerInterface) {
-    		$this->logger->log($level, $message, $context);
-    	}
-    	//dev/null
+    public function log($level, $message, array $context = [])
+    {
+        if ($this->logger && $this->logger instanceof LoggerInterface) {
+            $this->logger->log($level, $message, $context);
+        }
+        //dev/null
     }
 
     /**
-     * @param string              $transactionMethod
+     * @param string $transactionMethod
      * @param AbstractTransaction $transaction
      *
      * @return string
      */
-    public function buildXml($transactionMethod, AbstractTransaction $transaction) {
+    public function buildXml($transactionMethod, AbstractTransaction $transaction)
+    {
         $dom = $this->getGenerator()->generateTransaction(lcfirst($transactionMethod), $transaction, $this->username,
             $this->password, $this->language);
         $xml = $dom->saveXML();
@@ -181,17 +178,17 @@ class Client {
      * @param                     $transactionMethod
      * @param AbstractTransaction $transaction
      *
-     * @return Result
-     *
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Result
      */
-    protected function sendTransaction($transactionMethod, AbstractTransaction $transaction) {
+    protected function sendTransaction($transactionMethod, AbstractTransaction $transaction)
+    {
         $xml = $this->buildXml($transactionMethod, $transaction);
-        $httpResponse= $this->sendRequest($xml, self::$gatewayUrl.self::TRANSACTION_ROUTE);
+        $httpResponse = $this->sendRequest($xml, self::$gatewayUrl . self::TRANSACTION_ROUTE);
 
         return $this->getParser()->parseResult($httpResponse->getBody());
     }
@@ -199,75 +196,80 @@ class Client {
     /**
      * @param ScheduleData $schedule
      *
-     * @return Schedule\ScheduleResult
      * @throws ClientException
      * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Schedule\ScheduleResult
      */
-    public function startSchedule(ScheduleData $schedule) {
+    public function startSchedule(ScheduleData $schedule)
+    {
         return $this->sendScheduleRequest(self::SCHEDULE_ACTION_START, $schedule);
     }
 
     /**
      * @param ScheduleData $schedule
      *
-     * @return Schedule\ScheduleResult
      * @throws ClientException
      * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Schedule\ScheduleResult
      */
-    public function showSchedule(ScheduleData $schedule) {
+    public function showSchedule(ScheduleData $schedule)
+    {
         return $this->sendScheduleRequest(self::SCHEDULE_ACTION_SHOW, $schedule);
     }
 
     /**
      * @param ScheduleData $schedule
      *
-     * @return Schedule\ScheduleResult
      * @throws ClientException
      * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Schedule\ScheduleResult
      */
-    public function pauseSchedule(ScheduleData $schedule) {
+    public function pauseSchedule(ScheduleData $schedule)
+    {
         return $this->sendScheduleRequest(self::SCHEDULE_ACTION_PAUSE, $schedule);
     }
 
     /**
      * @param ScheduleData $schedule
      *
-     * @return Schedule\ScheduleResult
      * @throws ClientException
      * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Schedule\ScheduleResult
      */
-    public function continueSchedule(ScheduleData $schedule) {
+    public function continueSchedule(ScheduleData $schedule)
+    {
         return $this->sendScheduleRequest(self::SCHEDULE_ACTION_CONTINUE, $schedule);
     }
 
     /**
      * @param ScheduleData $schedule
      *
-     * @return Schedule\ScheduleResult
      * @throws ClientException
      * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Schedule\ScheduleResult
      */
-    public function cancelSchedule(ScheduleData $schedule) {
+    public function cancelSchedule(ScheduleData $schedule)
+    {
         return $this->sendScheduleRequest(self::SCHEDULE_ACTION_CANCEL, $schedule);
     }
 
@@ -275,19 +277,19 @@ class Client {
      * @param              $scheduleAction
      * @param ScheduleData $schedule
      *
-     * @return Schedule\ScheduleResult
      * @throws ClientException
      * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Schedule\ScheduleResult
      */
-    public function sendScheduleRequest($scheduleAction, ScheduleData $schedule) {
-
+    public function sendScheduleRequest($scheduleAction, ScheduleData $schedule)
+    {
         $scheduleXml = $this->getGenerator()->generateScheduleXml($scheduleAction, $schedule, $this->username, $this->password);
 
-        $httpResponse = $this->sendRequest($scheduleXml, self::$gatewayUrl.self::SCHEDULE_ROUTE);
+        $httpResponse = $this->sendRequest($scheduleXml, self::$gatewayUrl . self::SCHEDULE_ROUTE);
 
         return $this->getParser()->parseScheduleResult($httpResponse->getBody());
     }
@@ -295,19 +297,19 @@ class Client {
     /**
      * @param StatusRequestData $statusRequestData
      *
-     * @return StatusApi\StatusResult
      * @throws ClientException
      * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return StatusApi\StatusResult
      */
-    public function sendStatusRequest(StatusRequestData $statusRequestData) {
-
+    public function sendStatusRequest(StatusRequestData $statusRequestData)
+    {
         $statusRequestXml = $this->getGenerator()->generateStatusRequestXml($statusRequestData, $this->username, $this->password);
 
-        $httpResponse = $this->sendRequest($statusRequestXml, self::$gatewayUrl.self::STATUS_ROUTE);
+        $httpResponse = $this->sendRequest($statusRequestXml, self::$gatewayUrl . self::STATUS_ROUTE);
 
         return $this->getParser()->parseStatusResult($httpResponse->getBody());
     }
@@ -315,14 +317,14 @@ class Client {
     /**
      * @param string $xml
      *
-     * @return Response
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @return Response
      */
-    protected function sendRequest($xml, $url) {
-        
+    protected function sendRequest($xml, $url)
+    {
         $httpResponse = $this->signAndSendXml($xml, $this->apiKey, $this->sharedSecret, $url);
 
         if ($httpResponse->getErrorCode() || $httpResponse->getErrorMessage()) {
@@ -335,24 +337,20 @@ class Client {
             $rateLimitMessage = 'Rate Limit exceeded';
 
             if (is_array($httpResponse->getHeaders())) {
-
                 /**
-                 *
                  * Following Headers are available in the response of rate-limited api requests:
                  *      "X-RateLimit-Limit"
                  *      "X-RateLimit-Remaining"
                  *      "Retry-After"
-                 *
                  */
-
                 $rateLimit = !empty($httpResponse->getHeaders()['X-RateLimit-Limit']) ? $httpResponse->getHeaders()['X-RateLimit-Limit'] : null;
                 $retryAfter = !empty($httpResponse->getHeaders()['Retry-After']) ? $httpResponse->getHeaders()['Retry-After'] : null;
 
                 if ($rateLimit) {
-                    $rateLimitMessage .= ' | Rate Limit: '.$rateLimit;
+                    $rateLimitMessage .= ' | Rate Limit: ' . $rateLimit;
                 }
                 if ($rateLimit) {
-                    $rateLimitMessage .= ' | Retry-After: '.$retryAfter.' seconds';
+                    $rateLimitMessage .= ' | Retry-After: ' . $retryAfter . ' seconds';
                 }
             }
 
@@ -365,16 +363,16 @@ class Client {
     /**
      * @param array $dataArray
      * @param string $path
-     * @return Response
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
+     * @return Response
      */
-    protected function sendJsonApiRequest($dataArray, $path) {
-        
-        $url = self::$gatewayUrl.$path;
+    protected function sendJsonApiRequest($dataArray, $path)
+    {
+        $url = self::$gatewayUrl . $path;
         $body = json_encode($dataArray);
-        
+
         $httpResponse = $this->signAndSendJson($body, $url, $this->username, $this->password, $this->apiKey, $this->sharedSecret);
 
         if ($httpResponse->getErrorCode() || $httpResponse->getErrorMessage()) {
@@ -389,13 +387,14 @@ class Client {
 
     /**
      * @param string[] $compareValues
-     * @param string   $subject
+     * @param string $subject
      *
      * @return bool
      */
-    protected function startsWith(array $compareValues, $subject) {
-        $firstLetter = substr( $subject, 0, 1 );
-        foreach($compareValues as $compareValue) {
+    protected function startsWith(array $compareValues, $subject)
+    {
+        $firstLetter = substr($subject, 0, 1);
+        foreach ($compareValues as $compareValue) {
             if ($firstLetter == $compareValue) {
                 return true;
             }
@@ -412,31 +411,32 @@ class Client {
      * @param string $sharedSecret
      * @param string $url
      *
-     * @return Response
      * @throws Http\Exception\ClientException
+     * @return Response
      */
-    public function signAndSendXml($xml, $apiKey, $sharedSecret, $url) {
-		/*$this->log(LogLevel::DEBUG, "POST $url ",
-			array(
-				'url' => $url,
-				'xml' => $xml,
-				'apiKey' => $apiKey,
-				'sharedSecret' => $sharedSecret,
-			)
-		);*/
+    public function signAndSendXml($xml, $apiKey, $sharedSecret, $url)
+    {
+        $this->log(LogLevel::DEBUG, "POST $url ",
+            [
+                'url' => $url,
+                'xml' => $xml,
+                'apiKey' => $apiKey,
+                'sharedSecret' => $sharedSecret,
+            ],
+        );
 
         $curl = new CurlClient();
         $response = $curl
-        	->sign($apiKey, $sharedSecret, $url, $xml)
+            ->sign($apiKey, $sharedSecret, $url, $xml)
             ->post($url, $xml);
 
-		/*$this->log(LogLevel::DEBUG, "RESPONSE: " . $response->getBody(),
-			array(
-				'response' => $response
-			)
-		);*/
+        $this->log(LogLevel::DEBUG, 'RESPONSE: ' . $response->getBody(),
+            [
+                'response' => $response,
+            ],
+        );
 
-		return $response;
+        return $response;
     }
 
     /**
@@ -449,19 +449,20 @@ class Client {
      * @param $password
      * @param string $apiKey
      * @param string $sharedSecret
-     * @return Response
      * @throws Http\Exception\ClientException
+     * @return Response
      */
-    public function signAndSendJson($jsonBody, $url, $username, $password, $apiKey, $sharedSecret) {
+    public function signAndSendJson($jsonBody, $url, $username, $password, $apiKey, $sharedSecret)
+    {
         $url = str_replace('[API_KEY]', $apiKey, $url);
-        
+
         $this->log(LogLevel::DEBUG, "POST $url ",
-            array(
+            [
                 'url' => $url,
                 'json' => $jsonBody,
                 'apiKey' => $apiKey,
                 'sharedSecret' => $sharedSecret,
-            )
+            ],
         );
 
         $curl = new CurlClient();
@@ -470,10 +471,10 @@ class Client {
             ->setAuthentication($username, $password)
             ->post($url, $jsonBody);
 
-        $this->log(LogLevel::DEBUG, "RESPONSE: " . $response->getBody(),
-            array(
-                'response' => $response
-            )
+        $this->log(LogLevel::DEBUG, 'RESPONSE: ' . $response->getBody(),
+            [
+                'response' => $response,
+            ],
         );
 
         return $response;
@@ -486,12 +487,13 @@ class Client {
      *
      * @param Register $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function register(Register $transactionData) {
+    public function register(Register $transactionData)
+    {
         return $this->sendTransaction('register', $transactionData);
     }
 
@@ -502,12 +504,13 @@ class Client {
      *
      * @param Register $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function completeRegister(Register $transactionData) {
+    public function completeRegister(Register $transactionData)
+    {
         return $this->sendTransaction('completeRegister', $transactionData);
     }
 
@@ -518,12 +521,13 @@ class Client {
      *
      * @param Deregister $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function deregister(Deregister $transactionData) {
+    public function deregister(Deregister $transactionData)
+    {
         return $this->sendTransaction('deregister', $transactionData);
     }
 
@@ -534,12 +538,13 @@ class Client {
      *
      * @param Preauthorize $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function preauthorize(Preauthorize $transactionData) {
+    public function preauthorize(Preauthorize $transactionData)
+    {
         return $this->sendTransaction('preauthorize', $transactionData);
     }
 
@@ -548,26 +553,28 @@ class Client {
      *
      * @param Preauthorize $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function completePreauthorize(Preauthorize $transactionData) {
+    public function completePreauthorize(Preauthorize $transactionData)
+    {
         return $this->sendTransaction('completePreauthorize', $transactionData);
     }
 
     /**
      * void a previously preauthorized transaction
      *
-     * @param \PaymentGateway\Client\Transaction\VoidTransaction $transactionData
+     * @param VoidTransaction $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function void(VoidTransaction $transactionData) {
+    public function void(VoidTransaction $transactionData)
+    {
         return $this->sendTransaction('void', $transactionData);
     }
 
@@ -576,12 +583,13 @@ class Client {
      *
      * @param Capture $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function capture(Capture $transactionData) {
+    public function capture(Capture $transactionData)
+    {
         return $this->sendTransaction('capture', $transactionData);
     }
 
@@ -590,12 +598,13 @@ class Client {
      *
      * @param Refund $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function refund(Refund $transactionData) {
+    public function refund(Refund $transactionData)
+    {
         return $this->sendTransaction('refund', $transactionData);
     }
 
@@ -604,12 +613,13 @@ class Client {
      *
      * @param Debit $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws InvalidValueException
      * @throws Http\Exception\ClientException
+     * @return Result
      */
-    public function debit(Debit $transactionData) {
+    public function debit(Debit $transactionData)
+    {
         return $this->sendTransaction('debit', $transactionData);
     }
 
@@ -618,13 +628,14 @@ class Client {
      *
      * @param Debit $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
+     * @return Result
      */
-    public function completeDebit(Debit $transactionData) {
+    public function completeDebit(Debit $transactionData)
+    {
         return $this->sendTransaction('completeDebit', $transactionData);
     }
 
@@ -633,13 +644,14 @@ class Client {
      *
      * @param Payout $transactionData
      *
-     * @return Result
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
+     * @return Result
      */
-    public function payout(Payout $transactionData) {
+    public function payout(Payout $transactionData)
+    {
         return $this->sendTransaction('payout', $transactionData);
     }
 
@@ -649,31 +661,32 @@ class Client {
      *
      * @param string $requestBody
      *
+     * @throws InvalidValueException
      * @return Callback\Result
-     * @throws Exception\InvalidValueException
      */
-    public function readCallback($requestBody) {
+    public function readCallback($requestBody)
+    {
         return $this->getParser()->parseCallback($requestBody);
     }
 
     /**
      * validates if the received callback notification is properly signed
      *
-     * @param string $requestBody         - the raw xml body of the received request
-     * @param string $requestQuery        - the query part of your receiving script, e.g.
+     * @param string $requestBody - the raw xml body of the received request
+     * @param string $requestQuery - the query part of your receiving script, e.g.
      *                                    "/callback_receive.php?someId=0815" (without the hostname and with the
      *                                    leading slash and all query parameters)
-     * @param        $dateHeader          - value of the header field "Date"
+     * @param        $dateHeader - value of the header field "Date"
      * @param        $authorizationHeader - value of the header field "Authorization"
      *
      * @return bool - true if the signature is correct
      */
-    public function validateCallback($requestBody, $requestQuery, $dateHeader, $authorizationHeader) {
+    public function validateCallback($requestBody, $requestQuery, $dateHeader, $authorizationHeader)
+    {
         $curl = new CurlClient();
         $digest = $curl->createSignature($this->getSharedSecret(), 'POST', $requestBody, 'text/xml; charset=utf-8',
             $dateHeader, $requestQuery);
-        $expectedSig = 'Gateway '.$this->getApiKey() . ':' . $digest;
-
+        $expectedSig = 'Gateway ' . $this->getApiKey() . ':' . $digest;
 
         if (strpos($authorizationHeader, 'Authorization:') !== false) {
             $authorizationHeader = trim(str_replace('Authorization:', '', $authorizationHeader));
@@ -691,7 +704,8 @@ class Client {
      *
      * @return bool
      */
-    public function validateCallbackWithGlobals() {
+    public function validateCallbackWithGlobals()
+    {
         $requestBody = file_get_contents('php://input');
         $requestQuery = $_SERVER['REQUEST_URI'];
         if (!empty($_SERVER['HTTP_DATE'])) {
@@ -710,7 +724,6 @@ class Client {
             $authorizationHeader = null;
         }
 
-
         return $this->validateCallback($requestBody, $requestQuery, $dateHeader, $authorizationHeader);
     }
 
@@ -718,58 +731,64 @@ class Client {
      * retrieves customer profile by profile-guid
      *
      * @param string $profileGuid
-     * @return GetProfileResponse|ErrorResponse
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
+     * @return GetProfileResponse|ErrorResponse
      */
-    public function getCustomerProfileByProfileGuid($profileGuid) {
-        $requestData = array(
-            'profileGuid' => $profileGuid
-        );
+    public function getCustomerProfileByProfileGuid($profileGuid)
+    {
+        $requestData = [
+            'profileGuid' => $profileGuid,
+        ];
 
         $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_GET);
         $json = json_decode($response->getBody());
         if ($response->getStatusCode() == 200 && $json && ($json->success || isset($json->profileExists))) {
             $result = new GetProfileResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         } elseif ($json && !$json->success) {
             $result = new ErrorResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         }
 
-        throw new ClientException('Invalid response received: '.$response->getBody());
+        throw new ClientException('Invalid response received: ' . $response->getBody());
     }
 
     /**
      * retrieves customer profile by customer identification
      *
      * @param string $customerIdentification
-     * @return GetProfileResponse|ErrorResponse
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
+     * @return GetProfileResponse|ErrorResponse
      */
-    public function getCustomerProfileByIdentification($customerIdentification) {
-        $requestData = array(
-            'customerIdentification' => $customerIdentification
-        );
+    public function getCustomerProfileByIdentification($customerIdentification)
+    {
+        $requestData = [
+            'customerIdentification' => $customerIdentification,
+        ];
 
         $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_GET);
         $json = json_decode($response->getBody());
         if ($response->getStatusCode() == 200 && $json && ($json->success || isset($json->profileExists))) {
             $result = new GetProfileResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         } elseif ($json && !$json->success) {
             $result = new ErrorResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         }
 
-        throw new ClientException('Invalid response received: '.$response->getBody());
+        throw new ClientException('Invalid response received: ' . $response->getBody());
     }
 
     /**
@@ -778,23 +797,23 @@ class Client {
      * @param string $profileGuid
      * @param CustomerData $customerData
      * @param string|PaymentInstrument|null $preferredInstrument
-     * @return ErrorResponse|UpdateProfileResponse
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
+     * @return ErrorResponse|UpdateProfileResponse
      */
-    public function updateCustomerProfileByProfileGuid($profileGuid, CustomerData $customerData, $preferredInstrument = null) {
-        $requestData = array(
+    public function updateCustomerProfileByProfileGuid($profileGuid, CustomerData $customerData, $preferredInstrument = null)
+    {
+        $requestData = [
             'profileGuid' => $profileGuid,
-            'customerData' => $customerData->toArray()
-        );
+            'customerData' => $customerData->toArray(),
+        ];
         if ($preferredInstrument !== null) {
             if ($preferredInstrument instanceof PaymentInstrument) {
                 $requestData['preferredInstrument'] = $preferredInstrument->paymentToken;
             } else {
                 $requestData['preferredInstrument'] = $preferredInstrument;
             }
-
         }
 
         $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_UPDATE);
@@ -802,15 +821,16 @@ class Client {
         if ($response->getStatusCode() == 200 && $json && $json->success) {
             $result = new UpdateProfileResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         } elseif ($json && !$json->success) {
             $result = new ErrorResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         }
 
-        throw new ClientException('Invalid response received: '.$response->getBody());
-
+        throw new ClientException('Invalid response received: ' . $response->getBody());
     }
 
     /**
@@ -819,23 +839,23 @@ class Client {
      * @param string $customerIdentification
      * @param CustomerData $customerData
      * @param string|PaymentInstrument|null $preferredInstrument
-     * @return UpdateProfileResponse|ErrorResponse
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
+     * @return UpdateProfileResponse|ErrorResponse
      */
-    public function updateCustomerProfileByIdentification($customerIdentification, CustomerData $customerData, $preferredInstrument = null) {
-        $requestData = array(
+    public function updateCustomerProfileByIdentification($customerIdentification, CustomerData $customerData, $preferredInstrument = null)
+    {
+        $requestData = [
             'customerIdentification' => $customerIdentification,
-            'customerData' => $customerData->toArray()
-        );
+            'customerData' => $customerData->toArray(),
+        ];
         if ($preferredInstrument !== null) {
             if ($preferredInstrument instanceof PaymentInstrument) {
                 $requestData['preferredInstrument'] = $preferredInstrument->paymentToken;
             } else {
                 $requestData['preferredInstrument'] = $preferredInstrument;
             }
-
         }
 
         $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_UPDATE);
@@ -843,81 +863,87 @@ class Client {
         if ($response->getStatusCode() == 200 && $json && $json->success) {
             $result = new UpdateProfileResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         } elseif ($json && !$json->success) {
             $result = new ErrorResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         }
 
-        throw new ClientException('Invalid response received: '.$response->getBody());
+        throw new ClientException('Invalid response received: ' . $response->getBody());
     }
 
     /**
      * deletes customer profile by profile-guid
      *
      * @param $profileGuid
-     * @return DeleteProfileResponse|ErrorResponse
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
+     * @return DeleteProfileResponse|ErrorResponse
      */
-    public function deleteCustomerProfileByProfileGuid($profileGuid) {
-        $requestData = array(
+    public function deleteCustomerProfileByProfileGuid($profileGuid)
+    {
+        $requestData = [
             'profileGuid' => $profileGuid,
-        );
+        ];
 
-
-        $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_DELETE);;
+        $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_DELETE);
         $json = json_decode($response->getBody());
         if ($response->getStatusCode() == 200 && $json && $json->success) {
             $result = new DeleteProfileResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         } elseif ($json && !$json->success) {
             $result = new ErrorResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         }
 
-
-        throw new ClientException('Invalid response received: '.$response->getBody());
+        throw new ClientException('Invalid response received: ' . $response->getBody());
     }
 
     /**
      * deletes customer profile by customer identification
      *
      * @param $customerIdentification
-     * @return DeleteProfileResponse|ErrorResponse
      * @throws ClientException
      * @throws Http\Exception\ClientException
      * @throws TimeoutException
+     * @return DeleteProfileResponse|ErrorResponse
      */
-    public function deleteCustomerProfileByIdentification($customerIdentification) {
-        $requestData = array(
+    public function deleteCustomerProfileByIdentification($customerIdentification)
+    {
+        $requestData = [
             'customerIdentification' => $customerIdentification,
-        );
+        ];
 
-        $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_DELETE);;
+        $response = $this->sendJsonApiRequest($requestData, self::CUSTOMER_PROFILE_DELETE);
         $json = json_decode($response->getBody());
         if ($response->getStatusCode() == 200 && $json && $json->success) {
             $result = new DeleteProfileResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         } elseif ($json && !$json->success) {
             $result = new ErrorResponse();
             $result->_populateFromResponse($json);
+
             return $result;
         }
 
-
-        throw new ClientException('Invalid response received: '.$response->getBody());
+        throw new ClientException('Invalid response received: ' . $response->getBody());
     }
 
     /**
      * @return string
      */
-    public function getApiKey() {
+    public function getApiKey()
+    {
         return $this->apiKey;
     }
 
@@ -926,15 +952,18 @@ class Client {
      *
      * @return $this
      */
-    public function setApiKey($apiKey) {
+    public function setApiKey($apiKey)
+    {
         $this->apiKey = $apiKey;
+
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getSharedSecret() {
+    public function getSharedSecret()
+    {
         return $this->sharedSecret;
     }
 
@@ -943,15 +972,18 @@ class Client {
      *
      * @return $this
      */
-    public function setSharedSecret($sharedSecret) {
+    public function setSharedSecret($sharedSecret)
+    {
         $this->sharedSecret = $sharedSecret;
+
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getUsername() {
+    public function getUsername()
+    {
         return $this->username;
     }
 
@@ -960,15 +992,18 @@ class Client {
      *
      * @return $this
      */
-    public function setUsername($username) {
+    public function setUsername($username)
+    {
         $this->username = $username;
+
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getPassword() {
+    public function getPassword()
+    {
         return $this->password;
     }
 
@@ -977,8 +1012,10 @@ class Client {
      *
      * @return $this
      */
-    public function setPassword($password) {
+    public function setPassword($password)
+    {
         $this->password = $this->hashPassword($password);
+
         return $this;
     }
 
@@ -988,15 +1025,18 @@ class Client {
      * @param string $password
      * @return $this
      */
-    public function setHashedPassword($password) {
+    public function setHashedPassword($password)
+    {
         $this->password = $password;
+
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getLanguage() {
+    public function getLanguage()
+    {
         return $this->language;
     }
 
@@ -1005,27 +1045,32 @@ class Client {
      *
      * @return $this
      */
-    public function setLanguage($language) {
+    public function setLanguage($language)
+    {
         $this->language = $language;
+
         return $this;
     }
 
     /**
-     * @return boolean
+     * @return bool
      * @deprecated
      */
-    public function isTestMode() {
+    public function isTestMode()
+    {
         return $this->testMode;
     }
 
     /**
-     * @param boolean $testMode
+     * @param bool $testMode
      *
      * @return $this
      * @deprecated
      */
-    public function setTestMode($testMode) {
+    public function setTestMode($testMode)
+    {
         $this->testMode = $testMode;
+
         return $this;
     }
 
@@ -1033,23 +1078,23 @@ class Client {
      * @param string $identifier
      * @param mixed $args [optional]
      * @param mixed $_ [optional]
-     * @return mixed
      * @throws ClientException
      * @throws InvalidValueException
+     * @return mixed
      */
-    public function getOptions($identifier, $args = null, $_ = null) {
+    public function getOptions($identifier, $args = null, $_ = null)
+    {
         if (func_num_args() > 1) {
             $args = func_get_args();
             array_shift($args);
         } else {
-            $args = array();
+            $args = [];
         }
 
         $domDocument = $this->getGenerator()->generateOptions($this->getUsername(), $this->getPassword(), $identifier, $args);
         $xml = $domDocument->saveXML();
 
-
-        $response = $this->signAndSendXml($xml, $this->apiKey, $this->sharedSecret, self::$gatewayUrl.self::OPTIONS_ROUTE);
+        $response = $this->signAndSendXml($xml, $this->apiKey, $this->sharedSecret, self::$gatewayUrl . self::OPTIONS_ROUTE);
 
         if ($response->getErrorCode() || $response->getErrorMessage()) {
             throw new ClientException('Request failed: ' . $response->getErrorCode() . ' ' . $response->getErrorMessage());
@@ -1063,24 +1108,28 @@ class Client {
     /**
      * @return Generator
      */
-    public function getGenerator() {
+    public function getGenerator()
+    {
         if (!$this->generator) {
             $this->generator = new Generator();
         }
+
         return $this->generator;
     }
 
     /**
      * @param string $namespaceRoot
      */
-    public function setNamespaceRoot($namespaceRoot) {
+    public function setNamespaceRoot($namespaceRoot)
+    {
         $this->getGenerator()->setNamespaceRoot($namespaceRoot);
     }
 
     /**
      * @return Parser
      */
-    protected function getParser() {
+    protected function getParser()
+    {
         return new Parser();
     }
 
@@ -1089,10 +1138,12 @@ class Client {
      *
      * @return string
      */
-    private function hashPassword($password) {
+    private function hashPassword($password)
+    {
         for ($i = 0; $i < 10; $i++) {
             $password = sha1($password);
         }
+
         return $password;
     }
 
@@ -1104,15 +1155,16 @@ class Client {
      *
      * DO NOT MODIFY THE API URL IN PRODUCTION ENVIRONMENT IF IT IS NOT NECESSARY TO PREVENT UNEXPECTED BEHAVIOUR!
      *
-     * @param string $url   The URL to use to send the requests to.
-     *
-     * @return void
+     * @param string $url The URL to use to send the requests to.
      *
      * @throws InvalidValueException
+     * @return void
+     *
      *
      * @internal
      */
-    public static function setApiUrl($url) {
+    public static function setApiUrl($url)
+    {
         if (empty($url)) {
             throw new InvalidValueException('The URL to the Gateway can not be empty!');
         }
@@ -1125,7 +1177,8 @@ class Client {
      *
      * @return string
      */
-    public static function getApiUrl() {
+    public static function getApiUrl()
+    {
         return static::$gatewayUrl;
     }
 
@@ -1134,7 +1187,8 @@ class Client {
      *
      * @return string
      */
-    public static function getDefaultUrl() {
+    public static function getDefaultUrl()
+    {
         return static::DEFAULT_GATEWAY_URL;
     }
 
@@ -1143,11 +1197,11 @@ class Client {
      *
      * Please note that setting the API URL affects all instances (including the existing ones) of this client.
      *
-     * @return void
      * @throws InvalidValueException
+     * @return void
      */
-    public static function resetApiUrl() {
+    public static function resetApiUrl()
+    {
         static::setApiUrl(static::DEFAULT_GATEWAY_URL);
     }
-
 }
