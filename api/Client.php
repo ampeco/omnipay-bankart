@@ -2,6 +2,7 @@
 
 namespace PaymentGateway\Client;
 
+use Illuminate\Support\Facades\Log;
 use PaymentGateway\Client\CustomerProfile\CustomerData;
 use PaymentGateway\Client\CustomerProfile\DeleteProfileResponse;
 use PaymentGateway\Client\CustomerProfile\GetProfileResponse;
@@ -151,7 +152,7 @@ class Client
      */
     public function log($level, $message, array $context = [])
     {
-        if ($this->logger && $this->logger instanceof LoggerInterface) {
+        if ($this->logger instanceof LoggerInterface) {
             $this->logger->log($level, $message, $context);
         }
         //dev/null
@@ -178,11 +179,11 @@ class Client
      * @param                     $transactionMethod
      * @param AbstractTransaction $transaction
      *
-     * @throws ClientException
-     * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Http\Exception\ClientException
      * @return Result
      */
     protected function sendTransaction($transactionMethod, AbstractTransaction $transaction)
@@ -196,12 +197,12 @@ class Client
     /**
      * @param ScheduleData $schedule
      *
-     * @throws ClientException
-     * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Exception\TypeException
      * @return Schedule\ScheduleResult
      */
     public function startSchedule(ScheduleData $schedule)
@@ -212,12 +213,12 @@ class Client
     /**
      * @param ScheduleData $schedule
      *
-     * @throws ClientException
-     * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Exception\TypeException
      * @return Schedule\ScheduleResult
      */
     public function showSchedule(ScheduleData $schedule)
@@ -228,12 +229,12 @@ class Client
     /**
      * @param ScheduleData $schedule
      *
-     * @throws ClientException
-     * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Exception\TypeException
      * @return Schedule\ScheduleResult
      */
     public function pauseSchedule(ScheduleData $schedule)
@@ -244,12 +245,12 @@ class Client
     /**
      * @param ScheduleData $schedule
      *
-     * @throws ClientException
-     * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Exception\TypeException
      * @return Schedule\ScheduleResult
      */
     public function continueSchedule(ScheduleData $schedule)
@@ -260,12 +261,12 @@ class Client
     /**
      * @param ScheduleData $schedule
      *
-     * @throws ClientException
-     * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Exception\TypeException
      * @return Schedule\ScheduleResult
      */
     public function cancelSchedule(ScheduleData $schedule)
@@ -277,12 +278,12 @@ class Client
      * @param              $scheduleAction
      * @param ScheduleData $schedule
      *
-     * @throws ClientException
-     * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Exception\TypeException
      * @return Schedule\ScheduleResult
      */
     public function sendScheduleRequest($scheduleAction, ScheduleData $schedule)
@@ -297,12 +298,12 @@ class Client
     /**
      * @param StatusRequestData $statusRequestData
      *
-     * @throws ClientException
-     * @throws Exception\TypeException
      * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Exception\TypeException
      * @return StatusApi\StatusResult
      */
     public function sendStatusRequest(StatusRequestData $statusRequestData)
@@ -317,10 +318,10 @@ class Client
     /**
      * @param string $xml
      *
-     * @throws ClientException
-     * @throws Http\Exception\ClientException
      * @throws TimeoutException
      * @throws RateLimitException
+     * @throws ClientException
+     * @throws Http\Exception\ClientException
      * @return Response
      */
     protected function sendRequest($xml, $url)
@@ -363,9 +364,9 @@ class Client
     /**
      * @param array $dataArray
      * @param string $path
+     * @throws TimeoutException
      * @throws ClientException
      * @throws Http\Exception\ClientException
-     * @throws TimeoutException
      * @return Response
      */
     protected function sendJsonApiRequest($dataArray, $path)
@@ -416,7 +417,7 @@ class Client
      */
     public function signAndSendXml($xml, $apiKey, $sharedSecret, $url)
     {
-        $this->log(LogLevel::DEBUG, "POST $url ",
+        Log::info("[BANKART] POST REQUEST TO $url ",
             [
                 'url' => $url,
                 'xml' => $xml,
@@ -430,9 +431,12 @@ class Client
             ->sign($apiKey, $sharedSecret, $url, $xml)
             ->post($url, $xml);
 
-        $this->log(LogLevel::DEBUG, 'RESPONSE: ' . $response->getBody(),
+        Log::info('[BANKART] RESPONSE: ',
             [
-                'response' => $response,
+                'body' => $response->getBody(),
+                'statusCode' => $response->getStatusCode(),
+                'errorCode' => $response->getErrorCode(),
+                'errorMessage' => $response->getErrorMessage(),
             ],
         );
 
@@ -487,9 +491,9 @@ class Client
      *
      * @param Register $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function register(Register $transactionData)
@@ -504,9 +508,9 @@ class Client
      *
      * @param Register $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function completeRegister(Register $transactionData)
@@ -521,9 +525,9 @@ class Client
      *
      * @param Deregister $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function deregister(Deregister $transactionData)
@@ -538,9 +542,9 @@ class Client
      *
      * @param Preauthorize $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function preauthorize(Preauthorize $transactionData)
@@ -553,9 +557,9 @@ class Client
      *
      * @param Preauthorize $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function completePreauthorize(Preauthorize $transactionData)
@@ -568,9 +572,9 @@ class Client
      *
      * @param VoidTransaction $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function void(VoidTransaction $transactionData)
@@ -583,9 +587,9 @@ class Client
      *
      * @param Capture $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function capture(Capture $transactionData)
@@ -598,9 +602,9 @@ class Client
      *
      * @param Refund $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function refund(Refund $transactionData)
@@ -613,9 +617,9 @@ class Client
      *
      * @param Debit $transactionData
      *
+     * @throws Http\Exception\ClientException
      * @throws ClientException
      * @throws InvalidValueException
-     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function debit(Debit $transactionData)
@@ -628,10 +632,10 @@ class Client
      *
      * @param Debit $transactionData
      *
-     * @throws ClientException
-     * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
+     * @throws ClientException
+     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function completeDebit(Debit $transactionData)
@@ -644,10 +648,10 @@ class Client
      *
      * @param Payout $transactionData
      *
-     * @throws ClientException
-     * @throws Http\Exception\ClientException
      * @throws InvalidValueException
      * @throws TimeoutException
+     * @throws ClientException
+     * @throws Http\Exception\ClientException
      * @return Result
      */
     public function payout(Payout $transactionData)
@@ -731,9 +735,9 @@ class Client
      * retrieves customer profile by profile-guid
      *
      * @param string $profileGuid
+     * @throws TimeoutException
      * @throws ClientException
      * @throws Http\Exception\ClientException
-     * @throws TimeoutException
      * @return GetProfileResponse|ErrorResponse
      */
     public function getCustomerProfileByProfileGuid($profileGuid)
@@ -763,9 +767,9 @@ class Client
      * retrieves customer profile by customer identification
      *
      * @param string $customerIdentification
+     * @throws TimeoutException
      * @throws ClientException
      * @throws Http\Exception\ClientException
-     * @throws TimeoutException
      * @return GetProfileResponse|ErrorResponse
      */
     public function getCustomerProfileByIdentification($customerIdentification)
@@ -797,9 +801,9 @@ class Client
      * @param string $profileGuid
      * @param CustomerData $customerData
      * @param string|PaymentInstrument|null $preferredInstrument
+     * @throws TimeoutException
      * @throws ClientException
      * @throws Http\Exception\ClientException
-     * @throws TimeoutException
      * @return ErrorResponse|UpdateProfileResponse
      */
     public function updateCustomerProfileByProfileGuid($profileGuid, CustomerData $customerData, $preferredInstrument = null)
@@ -839,9 +843,9 @@ class Client
      * @param string $customerIdentification
      * @param CustomerData $customerData
      * @param string|PaymentInstrument|null $preferredInstrument
+     * @throws TimeoutException
      * @throws ClientException
      * @throws Http\Exception\ClientException
-     * @throws TimeoutException
      * @return UpdateProfileResponse|ErrorResponse
      */
     public function updateCustomerProfileByIdentification($customerIdentification, CustomerData $customerData, $preferredInstrument = null)
@@ -879,9 +883,9 @@ class Client
      * deletes customer profile by profile-guid
      *
      * @param $profileGuid
+     * @throws TimeoutException
      * @throws ClientException
      * @throws Http\Exception\ClientException
-     * @throws TimeoutException
      * @return DeleteProfileResponse|ErrorResponse
      */
     public function deleteCustomerProfileByProfileGuid($profileGuid)
@@ -911,9 +915,9 @@ class Client
      * deletes customer profile by customer identification
      *
      * @param $customerIdentification
+     * @throws TimeoutException
      * @throws ClientException
      * @throws Http\Exception\ClientException
-     * @throws TimeoutException
      * @return DeleteProfileResponse|ErrorResponse
      */
     public function deleteCustomerProfileByIdentification($customerIdentification)
