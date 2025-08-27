@@ -88,4 +88,13 @@ class Response extends AbstractResponse implements RedirectResponseInterface
         return $this->data->getRedirectUrl();
     }
 
+    public function isOperationSuccess(): bool
+    {
+        return $this->data instanceof StatusResult ? $this->data->isOperationSuccess() : false;
+    }
+
+    public function getTransactionStatus(): ?string
+    {
+        return $this->data instanceof StatusResult ? $this->data->getTransactionStatus() : null;
+    }
 }
