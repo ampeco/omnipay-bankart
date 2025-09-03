@@ -97,4 +97,9 @@ class Response extends AbstractResponse implements RedirectResponseInterface
     {
         return $this->data instanceof StatusResult ? $this->data->getTransactionStatus() : null;
     }
+
+    public function getTransactionType(): ?string
+    {
+        return $this->data instanceof StatusResult ? $this->data->getTransactionType() : null;
+    }
 }
