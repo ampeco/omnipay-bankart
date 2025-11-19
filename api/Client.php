@@ -13,6 +13,7 @@ use PaymentGateway\Client\Exception\InvalidValueException;
 use PaymentGateway\Client\Exception\RateLimitException;
 use PaymentGateway\Client\Exception\TimeoutException;
 use PaymentGateway\Client\Http\CurlClient;
+use PaymentGateway\Client\Http\Exception\ResponseException;
 use PaymentGateway\Client\Http\Response;
 use PaymentGateway\Client\Json\ErrorResponse;
 use PaymentGateway\Client\Schedule\ScheduleData;
@@ -356,6 +357,13 @@ class Client
             }
 
             throw new RateLimitException($rateLimitMessage);
+        }
+
+        if ($httpResponse->getStatusCode() >= 500 && $httpResponse->getStatusCode() < 600) {
+            throw new ResponseException(
+                'Server error: HTTP ' . $httpResponse->getStatusCode() . ' - ' .
+                ($httpResponse->getErrorMessage() ?: 'Internal Server Error')
+            );
         }
 
         return $httpResponse;
